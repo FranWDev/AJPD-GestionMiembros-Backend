@@ -26,6 +26,20 @@ public class AppHintsRegistrar implements RuntimeHintsRegistrar {
         registerClassIfExists(hints, "org.dubini.gestion.dto.JwtResponse");
         registerClassIfExists(hints, "org.dubini.gestion.controller.AuthController");
         registerClassIfExists(hints, "org.dubini.gestion.service.AuthService");
+
+        registerClassIfExists(hints, "org.dubini.gestion.dto.CentroDto");
+        registerClassIfExists(hints, "org.dubini.gestion.dto.CargoDto");
+        registerClassIfExists(hints, "org.dubini.gestion.dto.MiembroRequestDto");
+        registerClassIfExists(hints, "org.dubini.gestion.dto.MiembroResponseDto");
+        registerClassIfExists(hints, "org.dubini.gestion.dto.HistorialCargoDto");
+        registerClassIfExists(hints, "org.dubini.gestion.dto.DtoMapper");
+        registerClassIfExists(hints, "org.dubini.gestion.controller.CentroController");
+        registerClassIfExists(hints, "org.dubini.gestion.controller.CargoController");
+        registerClassIfExists(hints, "org.dubini.gestion.controller.MiembroController");
+        registerClassIfExists(hints, "org.dubini.gestion.service.CentroService");
+        registerClassIfExists(hints, "org.dubini.gestion.service.CargoService");
+        registerClassIfExists(hints, "org.dubini.gestion.service.MiembroService");
+        registerClassIfExists(hints, "org.dubini.gestion.exception.BusinessRuleException");
     }
 
     private void registerEntity(RuntimeHints hints, String className) {
