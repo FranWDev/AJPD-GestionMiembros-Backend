@@ -185,9 +185,20 @@ public class MiembroService {
     @Transactional
     public MiembroResponseDto deleteHistorialCargo(Long miembroId, Long historialId) {
         Miembro m = miembroRepo.findById(miembroId).orElseThrow(() -> new ResourceNotFoundException("Miembro no encontrado"));
-        boolean removed = m.getHistorialCargos().removeIf(h -> Objects.equals(h.getId(), historialId));
-        if (!removed) {
-            throw new ResourceNotFoundException("Registro de historial no encontrado");
+        HistorialCargo toDelete = m.getHistorialCargos().stream()
+                .filter(h -> Objects.equals(h.getId(), historialId))
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("Registro de historial no encontrado"));
+
+        boolean wasActive = toDelete.getFechaFin() == null;
+
+        m.getHistorialCargos().remove(toDelete);
+
+        if (wasActive && !m.getHistorialCargos().isEmpty()) {
+            m.getHistorialCargos().stream()
+                    .filter(h -> h.getFechaFin() != null)
+                    .max(Comparator.comparing(HistorialCargo::getFechaInicio))
+                    .ifPresent(prev -> prev.setFechaFin(null));
         }
 
         m.alignCurrentCargoWithHistory();

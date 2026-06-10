@@ -355,5 +355,69 @@ public class MiembroControllerIntegrationTest {
                         .header("Authorization", authHeader))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].nombreRazonSocial").value("Zinedine Zidane"));
+     }
+
+    @Test
+    public void testDeleteRecentCargoHistoryRestoresPreviousCargo() throws Exception {
+
+        String createMiembroBody = new JSONObject()
+                .put("nombreRazonSocial", "Test Restores Cargo")
+                .put("centroId", centroId)
+                .put("telefono", "123123123")
+                .put("correo", "testrestore@test.com")
+                .put("cargoId", cargoId1)
+                .put("fechaCargo", LocalDate.now().toString())
+                .put("enlaceWhatsapp", "wlink")
+                .toString();
+
+        String createResponse = mockMvc.perform(post("/api/miembros")
+                        .header("Authorization", authHeader)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(createMiembroBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.cargo.id").value(cargoId1))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        Long miembroId = new JSONObject(createResponse).getLong("id");
+
+        String updateMiembroBody = new JSONObject()
+                .put("nombreRazonSocial", "Test Restores Cargo")
+                .put("centroId", centroId)
+                .put("telefono", "123123123")
+                .put("correo", "testrestore@test.com")
+                .put("cargoId", cargoId2)
+                .put("fechaCargo", LocalDate.now().toString())
+                .put("enlaceWhatsapp", "wlink")
+                .toString();
+
+        mockMvc.perform(put("/api/miembros/" + miembroId)
+                        .header("Authorization", authHeader)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateMiembroBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.cargo.id").value(cargoId2));
+
+        Miembro miembro = miembroRepository.findById(miembroId).orElseThrow();
+        assertEquals(2, miembro.getHistorialCargos().size());
+        
+        HistorialCargo activeHc = miembro.getHistorialCargos().stream()
+                .filter(hc -> hc.getCargoId().equals(cargoId2))
+                .findFirst().orElseThrow();
+        Long activeHistoryId = activeHc.getId();
+
+        mockMvc.perform(delete("/api/miembros/" + miembroId + "/historial/" + activeHistoryId)
+                        .header("Authorization", authHeader))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.cargo.id").value(cargoId1));
+
+        miembro = miembroRepository.findById(miembroId).orElseThrow();
+        assertEquals(1, miembro.getHistorialCargos().size());
+        assertEquals(cargoId1, miembro.getCargoId());
+        
+        HistorialCargo remainingHc = miembro.getHistorialCargos().iterator().next();
+        assertEquals(cargoId1, remainingHc.getCargoId());
+        assertNull(remainingHc.getFechaFin());
     }
 }
