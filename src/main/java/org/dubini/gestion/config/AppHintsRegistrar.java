@@ -1,6 +1,9 @@
 package org.dubini.gestion.config;
 
 import org.springframework.aot.hint.*;
+import java.io.Serializable;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 public class AppHintsRegistrar implements RuntimeHintsRegistrar {
 
@@ -42,6 +45,8 @@ public class AppHintsRegistrar implements RuntimeHintsRegistrar {
         registerClassIfExists(hints, "org.dubini.gestion.exception.BusinessRuleException");
         registerClassIfExists(hints, "org.dubini.gestion.validation.ValidNifCif");
         registerClassIfExists(hints, "org.dubini.gestion.validation.NifCifValidator");
+        registerClassIfExists(hints, "org.dubini.gestion.dto.CargoHistorialDto");
+        registerClassIfExists(hints, "org.dubini.gestion.dto.CargoHistorialEditDto");
     }
 
     private void registerEntity(RuntimeHints hints, String className) {
@@ -54,8 +59,8 @@ public class AppHintsRegistrar implements RuntimeHintsRegistrar {
                     MemberCategory.DECLARED_FIELDS,
                     MemberCategory.INVOKE_PUBLIC_METHODS,
                     MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS);
-            if (java.io.Serializable.class.isAssignableFrom(clazz)) {
-                hints.serialization().registerType((Class<? extends java.io.Serializable>) clazz);
+            if (Serializable.class.isAssignableFrom(clazz)) {
+                hints.serialization().registerType((Class<? extends Serializable>) clazz);
             }
         } catch (ClassNotFoundException e) {
             System.err.println("Entity not found for hints: " + className);
@@ -77,10 +82,10 @@ public class AppHintsRegistrar implements RuntimeHintsRegistrar {
     private void registerSecurityClasses(RuntimeHints hints) {
         try {
             hints.reflection().registerType(
-                    org.springframework.security.core.userdetails.User.class,
+                    User.class,
                     MemberCategory.values());
             hints.reflection().registerType(
-                    org.springframework.security.core.authority.SimpleGrantedAuthority.class,
+                    SimpleGrantedAuthority.class,
                     MemberCategory.values());
 
             registerClassIfExists(hints, "org.dubini.gestion.security.JwtFilter");

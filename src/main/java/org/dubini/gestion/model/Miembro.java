@@ -10,7 +10,9 @@ import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Table("miembros")
 @Getter
@@ -37,4 +39,30 @@ public class Miembro {
 
     @MappedCollection(idColumn = "miembro_id")
     private Set<HistorialCargo> historialCargos = new HashSet<>();
+
+    public void alignCurrentCargoWithHistory() {
+        if (this.historialCargos == null || this.historialCargos.isEmpty()) {
+            this.cargoId = null;
+            this.fechaCargo = null;
+            return;
+        }
+
+        List<HistorialCargo> activeEntries = this.historialCargos.stream()
+                .filter(h -> h.getFechaFin() == null)
+                .sorted((h1, h2) -> h2.getFechaInicio().compareTo(h1.getFechaInicio()))
+                .collect(Collectors.toList());
+
+        if (!activeEntries.isEmpty()) {
+            HistorialCargo active = activeEntries.get(0);
+            this.cargoId = active.getCargoId();
+            this.fechaCargo = active.getFechaInicio();
+
+            for (int i = 1; i < activeEntries.size(); i++) {
+                activeEntries.get(i).setFechaFin(active.getFechaInicio());
+            }
+        } else {
+            this.cargoId = null;
+            this.fechaCargo = null;
+        }
+    }
 }

@@ -9,9 +9,9 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface HistorialCargoRepository extends ListCrudRepository<HistorialCargo, Long> {
+public interface HistorialCargoRepository extends ListCrudRepository<HistorialCargo, Long>, HistorialCargoRepositoryCustom {
 
-    @Query("SELECT * FROM historial_cargos WHERE miembro_id = :miembroId ORDER BY fecha_inicio DESC")
+    @Query("SELECT * FROM historial_cargos WHERE miembro_id = :miembroId ORDER BY FECHA_INICIO DESC")
     List<HistorialCargo> findByMiembroIdOrderByFechaInicioDesc(@Param("miembroId") Long miembroId);
 
     @Query("SELECT * FROM historial_cargos WHERE miembro_id IN (:miembroIds)")

@@ -1,24 +1,39 @@
 package org.dubini.gestion.service;
 
 import org.dubini.gestion.dto.CargoDto;
+import org.dubini.gestion.dto.CargoHistorialDto;
+import org.dubini.gestion.dto.CargoHistorialEditDto;
 import org.dubini.gestion.dto.DtoMapper;
 import org.dubini.gestion.exception.BusinessRuleException;
 import org.dubini.gestion.exception.ResourceNotFoundException;
 import org.dubini.gestion.model.Cargo;
+import org.dubini.gestion.model.HistorialCargo;
+import org.dubini.gestion.model.Miembro;
 import org.dubini.gestion.repository.CargoRepository;
+import org.dubini.gestion.repository.HistorialCargoRepository;
+import org.dubini.gestion.repository.MiembroRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
 public class CargoService {
 
     private final CargoRepository repo;
+    private final HistorialCargoRepository historialRepo;
+    private final MiembroRepository miembroRepo;
 
-    public CargoService(CargoRepository repo) {
+    public CargoService(CargoRepository repo, HistorialCargoRepository historialRepo, MiembroRepository miembroRepo) {
         this.repo = repo;
+        this.historialRepo = historialRepo;
+        this.miembroRepo = miembroRepo;
     }
 
     public Page<CargoDto> getCargos(String nombre, Pageable pageable) {
@@ -58,5 +73,61 @@ public class CargoService {
             throw new BusinessRuleException("No se puede eliminar el cargo porque está registrado en el historial de cargos");
         }
         repo.delete(c);
+    }
+
+    public Page<CargoHistorialDto> getCargoHistorial(
+            Long cargoId,
+            LocalDate fechaInicioDesde,
+            LocalDate fechaInicioHasta,
+            LocalDate fechaFinDesde,
+            LocalDate fechaFinHasta,
+            String buscar,
+            Pageable pageable
+    ) {
+        return historialRepo.findCargoHistorial(
+                cargoId,
+                fechaInicioDesde,
+                fechaInicioHasta,
+                fechaFinDesde,
+                fechaFinHasta,
+                buscar,
+                pageable
+        );
+    }
+
+    @Transactional
+    public CargoHistorialDto updateCargoHistorial(Long id, CargoHistorialEditDto dto) {
+        Long miembroId = miembroRepo.findMiembroIdByHistorialId(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Registro de historial no encontrado"));
+
+        Miembro m = miembroRepo.findById(miembroId)
+                .orElseThrow(() -> new ResourceNotFoundException("Miembro no encontrado"));
+
+        HistorialCargo hc = m.getHistorialCargos().stream()
+                .filter(h -> Objects.equals(h.getId(), id))
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("Registro de historial no encontrado"));
+
+        hc.setFechaInicio(dto.getFechaInicio());
+        hc.setFechaFin(dto.getFechaFin());
+        hc.setCargoId(dto.getCargoId());
+
+        m.alignCurrentCargoWithHistory();
+
+        m = miembroRepo.save(m);
+
+        Cargo cargo = repo.findById(dto.getCargoId())
+                .orElseThrow(() -> new ResourceNotFoundException("Cargo no encontrado"));
+
+        CargoHistorialDto result = new CargoHistorialDto();
+        result.setId(hc.getId());
+        result.setFechaInicio(hc.getFechaInicio());
+        result.setFechaFin(hc.getFechaFin());
+        result.setCargoId(cargo.getId());
+        result.setCargoNombre(cargo.getNombre());
+        result.setMiembroId(m.getId());
+        result.setMiembroNombre(m.getNombreRazonSocial());
+        result.setMiembroNif(m.getNifCif());
+        return result;
     }
 }

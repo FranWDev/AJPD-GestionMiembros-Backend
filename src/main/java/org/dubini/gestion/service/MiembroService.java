@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class MiembroService {
@@ -68,7 +69,7 @@ public class MiembroService {
                 .collect(Collectors.toSet());
 
         Set<Long> historyCargoIds = members.stream()
-                .flatMap(m -> m.getHistorialCargos() == null ? java.util.stream.Stream.empty() : m.getHistorialCargos().stream())
+                .flatMap(m -> m.getHistorialCargos() == null ? Stream.empty() : m.getHistorialCargos().stream())
                 .map(HistorialCargo::getCargoId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
@@ -124,6 +125,8 @@ public class MiembroService {
             m.getHistorialCargos().add(hc);
         }
 
+        m.alignCurrentCargoWithHistory();
+
         m = miembroRepo.save(m);
         return getMiembroById(m.getId());
     }
@@ -153,6 +156,8 @@ public class MiembroService {
             }
         }
 
+        m.alignCurrentCargoWithHistory();
+
         m = miembroRepo.save(m);
         return getMiembroById(m.getId());
     }
@@ -171,6 +176,8 @@ public class MiembroService {
             hc.setCargoId(dto.getCargo().getId());
         }
 
+        m.alignCurrentCargoWithHistory();
+
         m = miembroRepo.save(m);
         return getMiembroById(m.getId());
     }
@@ -182,6 +189,8 @@ public class MiembroService {
         if (!removed) {
             throw new ResourceNotFoundException("Registro de historial no encontrado");
         }
+
+        m.alignCurrentCargoWithHistory();
 
         m = miembroRepo.save(m);
         return getMiembroById(m.getId());
