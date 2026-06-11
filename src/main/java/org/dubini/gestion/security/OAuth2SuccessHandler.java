@@ -32,7 +32,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             String email = oauth2User.getAttribute("email");
 
             if (email == null || !email.endsWith("@proyectodubini.org")) {
-                String errorUrl = frontendUrl + "/login?error=" + URLEncoder.encode("El correo electrónico debe pertenecer al dominio proyectodubini.org", StandardCharsets.UTF_8);
+                String errorUrl = frontendUrl + "/login?error=" + URLEncoder.encode("El correo electrónico no está autorizado.", StandardCharsets.UTF_8);
                 getRedirectStrategy().sendRedirect(request, response, errorUrl);
                 return;
             }
