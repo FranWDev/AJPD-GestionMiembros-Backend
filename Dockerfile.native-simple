@@ -1,9 +1,13 @@
-FROM debian:bookworm-slim
+FROM debian:bookworm-slim AS helper
+
+FROM gcr.io/distroless/cc-debian12
 WORKDIR /app
+COPY --from=helper /lib/x86_64-linux-gnu/libz.so.1 /lib/x86_64-linux-gnu/libz.so.1
 COPY target/gestion /app/gestion
-RUN chmod +x /app/gestion
+
 ENV SERVER_PORT=${PORT:-8080}
 ENV TZ=Europe/Madrid
-RUN useradd -m springuser
-USER springuser
+USER 65532:65532
 ENTRYPOINT ["/app/gestion"]
+
+
