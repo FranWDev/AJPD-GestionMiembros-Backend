@@ -21,6 +21,7 @@ public class AppHintsRegistrar implements RuntimeHintsRegistrar {
         registerEntity(hints, "org.dubini.gestion.model.Centro");
         registerEntity(hints, "org.dubini.gestion.model.Cargo");
         registerEntity(hints, "org.dubini.gestion.model.HistorialCargo");
+        registerEntity(hints, "org.dubini.gestion.model.News");
 
         registerException(hints, "org.dubini.gestion.exception.ResourceNotFoundException");
 
@@ -56,6 +57,35 @@ public class AppHintsRegistrar implements RuntimeHintsRegistrar {
         registerClassIfExists(hints, "org.dubini.gestion.dto.CargoHistorialDto");
         registerClassIfExists(hints, "org.dubini.gestion.dto.CargoHistorialEditDto");
         registerClassIfExists(hints, "org.dubini.gestion.dto.MiembroFiltro");
+        registerClassIfExists(hints, "org.dubini.gestion.dto.EditorJSBlock");
+        registerClassIfExists(hints, "org.dubini.gestion.dto.EditorJSContentDTO");
+        registerClassIfExists(hints, "org.dubini.gestion.dto.PublicationDTO");
+        registerClassIfExists(hints, "org.dubini.gestion.dto.response.HttpResponse");
+        registerClassIfExists(hints, "org.dubini.gestion.config.PGobjectToStringConverter");
+        registerClassIfExists(hints, "org.dubini.gestion.config.PostgresJsonbWritingConverter");
+        registerClassIfExists(hints, "org.dubini.gestion.config.JdbcConfiguration");
+        registerClassIfExists(hints, "org.dubini.gestion.config.FrontendApiUrlProperties");
+        registerClassIfExists(hints, "org.dubini.gestion.client.CacheInvalidationClient");
+        registerClassIfExists(hints, "org.dubini.gestion.service.CacheInvalidatorService");
+        registerClassIfExists(hints, "org.dubini.gestion.service.NewsService");
+        registerClassIfExists(hints, "org.dubini.gestion.controller.NewsController");
+        registerClassIfExists(hints, "org.dubini.gestion.controller.CacheInvalidatorController");
+        registerClassIfExists(hints, "org.dubini.gestion.dto.response.EditorJSImageResponseDTO");
+        registerClassIfExists(hints, "org.dubini.gestion.dto.response.EditorJSImageResponseDTO$FileData");
+        registerClassIfExists(hints, "org.dubini.gestion.dto.response.ImageResponseDTO");
+        registerClassIfExists(hints, "org.dubini.gestion.config.SupabaseStorageProperties");
+        registerClassIfExists(hints, "org.dubini.gestion.service.ImageService");
+        registerClassIfExists(hints, "org.dubini.gestion.controller.ImageUploadController");
+        registerClassIfExists(hints, "org.dubini.gestion.service.HeroImageService");
+        registerClassIfExists(hints, "org.dubini.gestion.controller.HeroImageController");
+        registerClassIfExists(hints, "org.dubini.gestion.controller.HeroImageController$HeroImageUrlResponse");
+        registerClassIfExists(hints, "org.dubini.gestion.service.SliderImageService");
+        registerClassIfExists(hints, "org.dubini.gestion.controller.SliderImageController");
+        registerClassIfExists(hints, "org.dubini.gestion.controller.SliderImageController$SliderCaptionRequest");
+        registerClassIfExists(hints, "org.dubini.gestion.controller.SliderImageController$SliderCaptionUpdateResponse");
+        registerClassIfExists(hints, "org.dubini.gestion.controller.SliderImageController$SliderInfoResponse");
+        registerClassIfExists(hints, "org.dubini.gestion.controller.SliderImageController$SliderImageUrlResponse");
+        registerClassIfExists(hints, "org.dubini.gestion.controller.SliderImageController$SliderCaptionResponse");
 
         registerClassIfExists(hints, "org.springdoc.core.configuration.SpringDocConfiguration");
         registerClassIfExists(hints, "org.springdoc.core.properties.SpringDocConfigProperties");

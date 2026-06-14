@@ -43,6 +43,16 @@ public class JwtProvider {
                 .compact();
     }
 
+    public String generateShortLivedToken() {
+        Instant now = Instant.now();
+        return Jwts.builder()
+                .subject("backoffice")
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(now.plusMillis(30_000L)))
+                .signWith(key)
+                .compact();
+    }
+
     public boolean validateToken(String token) {
         try {
             Claims claims = Jwts.parser()

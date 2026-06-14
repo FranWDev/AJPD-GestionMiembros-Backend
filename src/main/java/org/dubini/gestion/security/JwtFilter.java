@@ -56,22 +56,12 @@ public class JwtFilter extends OncePerRequestFilter {
             }
         }
 
-        if (token == null) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("No authentication token found");
-            return;
+        if (token != null && jwtProvider.validateToken(token)) {
+            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                    "backoffice", null, Collections.emptyList());
+            SecurityContextHolder.clearContext();
+            SecurityContextHolder.getContext().setAuthentication(auth);
         }
-
-        if (!jwtProvider.validateToken(token)) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Invalid or expired authentication token");
-            return;
-        }
-
-        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                "backoffice", null, Collections.emptyList());
-        SecurityContextHolder.clearContext();
-        SecurityContextHolder.getContext().setAuthentication(auth);
 
         filterChain.doFilter(request, response);
     }
