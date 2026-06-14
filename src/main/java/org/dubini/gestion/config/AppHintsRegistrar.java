@@ -86,6 +86,7 @@ public class AppHintsRegistrar implements RuntimeHintsRegistrar {
         registerClassIfExists(hints, "org.dubini.gestion.controller.SliderImageController$SliderInfoResponse");
         registerClassIfExists(hints, "org.dubini.gestion.controller.SliderImageController$SliderImageUrlResponse");
         registerClassIfExists(hints, "org.dubini.gestion.controller.SliderImageController$SliderCaptionResponse");
+        registerClassIfExists(hints, "org.dubini.gestion.controller.HeartbeatController");
 
         registerClassIfExists(hints, "org.springdoc.core.configuration.SpringDocConfiguration");
         registerClassIfExists(hints, "org.springdoc.core.properties.SpringDocConfigProperties");
