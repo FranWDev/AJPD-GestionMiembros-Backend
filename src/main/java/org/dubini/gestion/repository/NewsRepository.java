@@ -36,5 +36,12 @@ public interface NewsRepository extends ListCrudRepository<News, String>, Paging
     void updateNews(@Param("title") String title, 
                     @Param("content") Object content, 
                     @Param("createdAt") LocalDateTime createdAt);
+
+    @Modifying
+    @Query("UPDATE news SET title = :newTitle, content = :content, created_at = :createdAt WHERE title = :oldTitle")
+    void updateNewsTitle(@Param("oldTitle") String oldTitle,
+                         @Param("newTitle") String newTitle,
+                         @Param("content") Object content,
+                         @Param("createdAt") LocalDateTime createdAt);
 }
 

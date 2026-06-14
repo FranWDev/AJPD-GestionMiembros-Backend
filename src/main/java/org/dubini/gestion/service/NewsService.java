@@ -19,6 +19,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageImpl;
 import org.dubini.gestion.config.PostgresJsonbWritingConverter;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.Cookie;
 
 @Service
 @Transactional(readOnly = true)
@@ -69,7 +71,26 @@ public class NewsService {
         return getAll(null);
     }
 
-    public Object getNews(String search, Pageable pageable, Integer page, Integer size) {
+    public Object getNews(String search, Pageable pageable, Integer page, Integer size, HttpServletRequest request) {
+        boolean isPublicRequest = false;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("jwt".equals(cookie.getName())) {
+                    isPublicRequest = true;
+                    break;
+                }
+            }
+        }
+        
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            isPublicRequest = true;
+        }
+
+        if (isPublicRequest) {
+            return getAll(search);
+        }
+
         if (page == null || size == null) {
             return getAll(search);
         }
@@ -101,20 +122,49 @@ public class NewsService {
         String safeTitle = sanitizeFileName(publicationDTO.getTitle());
 
         try {
-            LocalDateTime createdAt = newsRepository.findById(safeTitle)
-                    .map(News::getCreatedAt)
-                    .orElse(LocalDateTime.now());
-
-            if (publicationDTO.getCreatedAt() == null) {
-                publicationDTO.setCreatedAt(createdAt.atOffset(java.time.ZoneOffset.UTC).format(java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+            LocalDateTime createdAt = LocalDateTime.now();
+            String safeOldTitle = null;
+            if (publicationDTO.oldTitle != null && !publicationDTO.oldTitle.trim().isEmpty()) {
+                safeOldTitle = sanitizeFileName(publicationDTO.oldTitle);
             }
 
-            String jsonContent = objectMapper.writeValueAsString(publicationDTO);
-            Object convertedContent = postgresJsonbWritingConverter.convert(jsonContent);
-            if (newsRepository.existsById(safeTitle)) {
-                newsRepository.updateNews(safeTitle, convertedContent, createdAt);
+            if (safeOldTitle != null && !safeOldTitle.equals(safeTitle)) {
+                createdAt = newsRepository.findById(safeOldTitle)
+                        .map(News::getCreatedAt)
+                        .orElse(LocalDateTime.now());
+
+                if (publicationDTO.getCreatedAt() == null) {
+                    publicationDTO.setCreatedAt(createdAt.atOffset(java.time.ZoneOffset.UTC).format(java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+                }
+
+                String jsonContent = objectMapper.writeValueAsString(publicationDTO);
+                Object convertedContent = postgresJsonbWritingConverter.convert(jsonContent);
+
+                if (newsRepository.existsById(safeOldTitle)) {
+                    if (newsRepository.existsById(safeTitle)) {
+                        throw new IllegalArgumentException("Ya existe otra noticia con el nuevo título especificado");
+                    }
+                    newsRepository.updateNewsTitle(safeOldTitle, safeTitle, convertedContent, createdAt);
+                } else {
+                    newsRepository.insertNews(safeTitle, convertedContent, createdAt);
+                }
             } else {
-                newsRepository.insertNews(safeTitle, convertedContent, createdAt);
+                createdAt = newsRepository.findById(safeTitle)
+                        .map(News::getCreatedAt)
+                        .orElse(LocalDateTime.now());
+
+                if (publicationDTO.getCreatedAt() == null) {
+                    publicationDTO.setCreatedAt(createdAt.atOffset(java.time.ZoneOffset.UTC).format(java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+                }
+
+                String jsonContent = objectMapper.writeValueAsString(publicationDTO);
+                Object convertedContent = postgresJsonbWritingConverter.convert(jsonContent);
+
+                if (newsRepository.existsById(safeTitle)) {
+                    newsRepository.updateNews(safeTitle, convertedContent, createdAt);
+                } else {
+                    newsRepository.insertNews(safeTitle, convertedContent, createdAt);
+                }
             }
             log.info("News saved successfully: {}", publicationDTO.getTitle());
         } catch (JsonProcessingException e) {

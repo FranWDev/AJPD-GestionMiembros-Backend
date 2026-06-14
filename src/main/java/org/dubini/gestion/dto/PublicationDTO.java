@@ -18,6 +18,7 @@ public class PublicationDTO {
     public String createdAt;
     public EditorJSContentDTO editorContent;
     private OffsetDateTime createdAtDateTime;
+    public String oldTitle;
 
     public PublicationDTO() {
     }

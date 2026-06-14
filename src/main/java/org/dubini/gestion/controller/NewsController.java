@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @RestController
@@ -29,8 +30,9 @@ public class NewsController {
             @RequestParam(required = false) String search,
             Pageable pageable,
             @RequestParam(required = false) Integer page,
-            @RequestParam(required = false) Integer size) {
-        return ResponseEntity.ok(service.getNews(search, pageable, page, size));
+            @RequestParam(required = false) Integer size,
+            HttpServletRequest request) {
+        return ResponseEntity.ok(service.getNews(search, pageable, page, size, request));
     }
 
     @Operation(summary = "Obtener noticia por identificador")
